@@ -83,6 +83,7 @@ def pass2act(doc):
             if a.lemma_ == 'not':
                 if p.lemma_ == 'be':
                     if n.lemma_ == 'be':
+                        verbtense = en.tenses(a.text)[0][0]
                         auxstr += en.conjugate('be',tense=en.tenses(p.text)[0][0],number=num) + ' '
                         verbaspect = en.PROGRESSIVE
                     else:
@@ -91,6 +92,7 @@ def pass2act(doc):
                 auxstr += 'not '
             elif a.lemma_ == 'be':
                 if p.lemma_ == 'be':
+                    verbtense = en.tenses(a.text)[0][0]
                     auxstr += en.conjugate('be',tense=en.tenses(a.text)[0][0],number=num) + ' '
                     verbaspect = en.PROGRESSIVE
             elif a.lemma_ == 'have':
