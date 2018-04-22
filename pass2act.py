@@ -16,6 +16,9 @@ def pass2act(doc):
         prep = ''
         agent = ''
         advcltree = None
+        will = ''
+        aux1 = ''
+        aux2 = ''
         punc = '.'
         for word in sent:
             if word.dep_ == 'advcl':
@@ -32,6 +35,15 @@ def pass2act(doc):
                         adverb['bef'] = ''.join(w.text_with_ws for w in word.subtree).strip()
                     else:
                         adverb['aft'] = ''.join(w.text_with_ws for w in word.subtree).strip()
+            if word.text.lower() == 'will':
+                if word.head.dep_ == 'ROOT':
+                    will = 'will'
+            if word.dep_ == 'aux':
+                if word.head.dep_ == 'ROOT':
+                    aux1 = word
+            if word.dep_ == 'auxpass':
+                if word.head.dep_ == 'ROOT':
+                    aux2 = word
             if word.dep_ == 'ROOT':
                 verb = word.text_with_ws.strip()
             if word.dep_ == 'prt':
@@ -55,7 +67,10 @@ def pass2act(doc):
             newdoc += str(sent)
             continue
 
-        verb = en.conjugate(verb,tense=en.tenses(verb)[0][0])
+        if will:
+            verb = en.conjugate(verb,tense=en.INFINITIVE)
+        else:
+            verb = en.conjugate(verb,tense=en.tenses(verb)[0][0])
         agent = nouninv(agent)
         subjpass = nouninv(subjpass)
 
@@ -67,6 +82,6 @@ def pass2act(doc):
                 else:
                     advcl += w.text_with_ws
 
-        newdoc += ' '.join(list(filter(None, [agent,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
+        newdoc += ' '.join(list(filter(None, [agent,will,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
         newdoc = newdoc[0].upper() + newdoc[1:]
     return newdoc
