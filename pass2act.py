@@ -31,7 +31,7 @@ def pass2act(doc):
             if word.dep_ == 'nsubj':
                 if word.head.dep_ == 'auxpass':
                     subjpass = ''.join(w.text_with_ws.lower() if w.dep_ == 'nsubj' else w.text_with_ws for w in word.subtree).strip()
-            if word.dep_ == 'advmod':
+            if word.dep_ in ('advmod','npadvmod'):
                 if word.head.dep_ == 'ROOT':
                     if verb == '':
                         adverb['bef'] = ''.join(w.text_with_ws for w in word.subtree).strip()
