@@ -12,6 +12,8 @@ def pass2act(doc):
         # Init parts of sentence to capture:
         subjpass = ''
         verb = ''
+        verbaspect = ''
+        verbtense = ''
         adverb = {'bef':'', 'aft':''}
         part = ''
         prep = ''
@@ -20,7 +22,6 @@ def pass2act(doc):
         advcltree = None
         aux = list(list(nlp('. .').sents)[0]) # start with 2 'null' elements
         punc = '.'
-
         # Analyse dependency tree:
         for word in sent:
             if word.dep_ == 'advcl':
@@ -41,7 +42,18 @@ def pass2act(doc):
                 if word.head.dep_ == 'ROOT':
                     aux += [word]
             if word.dep_ == 'ROOT':
-                verb = word.text_with_ws.strip()
+                verb = word.text
+                if word.tag_ == 'VB':
+                    verbtense = en.INFINITIVE
+                elif word.tag_ == 'VBD':
+                    verbtense = en.PAST
+                elif word.tag_ == 'VBG':
+                    verbtense = en.PRESENT
+                    verbaspect = en.PROGRESSIVE
+                elif word.tag_ == 'VBN':
+                    verbtense = en.PAST
+                else:
+                    verbtense = en.tenses(word.text)[0][0]
             if word.dep_ == 'prt':
                 if word.head.dep_ == 'ROOT':
                     part = ''.join(w.text_with_ws for w in word.subtree).strip()
@@ -73,8 +85,6 @@ def pass2act(doc):
         # FUCKING CONJUGATION!!!!!!!!!!!!!:
         auxstr = ''
         num = en.SINGULAR if not aplural or agent in ('he','she') else en.PLURAL
-        verbtense = en.tenses(verb)[0][0]
-        verbaspect = None
         aux.append(aux[0])
         for (pp, p, a, n) in zip(aux,aux[1:],aux[2:],aux[3:]):
             if a.lemma_ == '.':
@@ -104,6 +114,7 @@ def pass2act(doc):
                 auxstr += a.text_with_ws
         auxstr = auxstr.strip()
 
+        verbaspect = None
         if auxstr.startswith('will'):
             verb = en.conjugate(verb,tense=en.INFINITIVE)
         else:
