@@ -8,18 +8,20 @@ def pass2act(doc):
     parse = nlp(doc)
     newdoc = ''
     for sent in parse.sents:
-        
+
+        # Init parts of sentence to capture:
         subjpass = ''
         verb = ''
         adverb = {'bef':'', 'aft':''}
         part = ''
         prep = ''
         agent = ''
+        aplural = False
         advcltree = None
-        will = ''
-        aux1 = ''
-        aux2 = ''
+        aux = list(list(nlp('. .').sents)[0]) # start with 2 'null' elements
         punc = '.'
+
+        # Analyse dependency tree:
         for word in sent:
             if word.dep_ == 'advcl':
                 if word.head.dep_ in ('ROOT', 'auxpass'):
@@ -35,44 +37,78 @@ def pass2act(doc):
                         adverb['bef'] = ''.join(w.text_with_ws for w in word.subtree).strip()
                     else:
                         adverb['aft'] = ''.join(w.text_with_ws for w in word.subtree).strip()
-            if word.text.lower() == 'will':
+            if word.dep_ in ('aux','auxpass','neg'):
                 if word.head.dep_ == 'ROOT':
-                    will = 'will'
-            if word.dep_ == 'aux':
-                if word.head.dep_ == 'ROOT':
-                    aux1 = word
-            if word.dep_ == 'auxpass':
-                if word.head.dep_ == 'ROOT':
-                    aux2 = word
+                    aux += [word]
             if word.dep_ == 'ROOT':
                 verb = word.text_with_ws.strip()
             if word.dep_ == 'prt':
                 if word.head.dep_ == 'ROOT':
-                    part += ''.join(w.text_with_ws for w in word.subtree).strip()
+                    part = ''.join(w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'prep':
                 if word.head.dep_ == 'ROOT':
-                    prep += ''.join(w.text_with_ws for w in word.subtree).strip()
+                    prep = ''.join(w.text_with_ws for w in word.subtree).strip()
             if word.dep_.endswith('obj'):
                 if word.head.dep_ == 'agent':
                     agent = ''.join(w.text_with_ws + ',' if w.dep_=='appos' else w.text_with_ws for w in word.subtree).strip()
+                    aplural = word.tag_ in ('NNS','NNPS')
             if word.dep_ == 'punct':
                 punc = word.text
 
+        # exit if not passive:
         if subjpass == '':
             newdoc += str(sent)
             continue
-        
+
+        # if no agent is found:
         if agent == '':
             # what am I gonna do? BITconEEEEEEECT!!!!
             newdoc += str(sent)
             continue
 
-        if will:
-            verb = en.conjugate(verb,tense=en.INFINITIVE)
-        else:
-            verb = en.conjugate(verb,tense=en.tenses(verb)[0][0])
+        # invert nouns:
         agent = nouninv(agent)
         subjpass = nouninv(subjpass)
+
+        # FUCKING CONJUGATION!!!!!!!!!!!!!:
+        auxstr = ''
+        num = en.SINGULAR if not aplural or agent in ('he','she') else en.PLURAL
+        verbtense = en.tenses(verb)[0][0]
+        verbaspect = None
+        aux.append(aux[0])
+        for (pp, p, a, n) in zip(aux,aux[1:],aux[2:],aux[3:]):
+            if a.lemma_ == '.':
+                continue
+
+            if a.lemma_ == 'not':
+                if p.lemma_ == 'be':
+                    if n.lemma_ == 'be':
+                        auxstr += en.conjugate('be',tense=en.tenses(p.text)[0][0],number=num) + ' '
+                        verbaspect = en.PROGRESSIVE
+                    else:
+                        auxstr += en.conjugate('do',tense=en.tenses(p.text)[0][0],number=num) + ' '
+                        verbtense = en.INFINITIVE
+                auxstr += 'not '
+            elif a.lemma_ == 'be':
+                if p.lemma_ == 'be':
+                    auxstr += en.conjugate('be',tense=en.tenses(a.text)[0][0],number=num) + ' '
+                    verbaspect = en.PROGRESSIVE
+            elif a.lemma_ == 'have':
+                num == en.PLURAL if p.tag_ == 'MD' else num
+                auxstr += en.conjugate('have',tense=en.tenses(a.text)[0][0],number=num) + ' '
+                if n.lemma_ == 'be':
+                    verbaspect = en.PROGRESSIVE
+            else:
+                auxstr += a.text_with_ws
+        auxstr = auxstr.strip()
+
+        if auxstr.startswith('will'):
+            verb = en.conjugate(verb,tense=en.INFINITIVE)
+        else:
+            if verbaspect:
+                verb = en.conjugate(verb,tense=verbtense,aspect=verbaspect)
+            else:
+                verb = en.conjugate(verb,tense=verbtense)
 
         advcl = ''
         if advcltree:
@@ -82,6 +118,6 @@ def pass2act(doc):
                 else:
                     advcl += w.text_with_ws
 
-        newdoc += ' '.join(list(filter(None, [agent,will,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
+        newdoc += ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
         newdoc = newdoc[0].upper() + newdoc[1:]
     return newdoc
