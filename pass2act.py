@@ -28,7 +28,8 @@ def pass2act(doc):
                 if word.head.dep_ in ('ROOT', 'auxpass'):
                     advcltree = word.subtree
             if word.dep_ == 'nsubjpass':
-                subjpass = ''.join(w.text_with_ws.lower() if w.dep_ != 'nsubjpass' else w.text_with_ws for w in word.subtree).strip()
+                if word.head.dep_ == 'ROOT':
+                    subjpass = ''.join(w.text_with_ws.lower() if w.dep_ != 'nsubjpass' else w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'nsubj':
                 if word.head.dep_ == 'auxpass':
                     subjpass = ''.join(w.text_with_ws.lower() if w.dep_ == 'nsubj' else w.text_with_ws for w in word.subtree).strip()
