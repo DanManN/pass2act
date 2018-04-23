@@ -70,13 +70,13 @@ def pass2act(doc):
 
         # exit if not passive:
         if subjpass == '':
-            newdoc += str(sent)
+            newdoc += str(sent) + ' '
             continue
 
         # if no agent is found:
         if agent == '':
             # what am I gonna do? BITconEEEEEEECT!!!!
-            newdoc += str(sent)
+            newdoc += str(sent) + ' '
             continue
 
         # invert nouns:
@@ -132,6 +132,7 @@ def pass2act(doc):
                 else:
                     advcl += w.text_with_ws
 
-        newdoc += ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
-        newdoc = newdoc[0].upper() + newdoc[1:]
+        newsent = ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
+        newsent = newsent[0].upper() + newsent[1:]
+        newdoc += newsent + ' '
     return newdoc
