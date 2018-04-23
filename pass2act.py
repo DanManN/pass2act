@@ -11,6 +11,7 @@ def pass2act(doc):
 
         # Init parts of sentence to capture:
         subjpass = ''
+        subj = ''
         verb = ''
         verbaspect = ''
         verbtense = ''
@@ -21,6 +22,7 @@ def pass2act(doc):
         aplural = False
         advcltree = None
         aux = list(list(nlp('. .').sents)[0]) # start with 2 'null' elements
+        xcomp = ''
         punc = '.'
         # Analyse dependency tree:
         for word in sent:
@@ -29,16 +31,22 @@ def pass2act(doc):
                     advcltree = word.subtree
             if word.dep_ == 'nsubjpass':
                 if word.head.dep_ == 'ROOT':
-                    subjpass = ''.join(w.text_with_ws.lower() if w.dep_ != 'nsubjpass' else w.text_with_ws for w in word.subtree).strip()
+                    subjpass = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'nsubj':
+                subj = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
                 if word.head.dep_ == 'auxpass':
-                    subjpass = ''.join(w.text_with_ws.lower() if w.dep_ == 'nsubj' else w.text_with_ws for w in word.subtree).strip()
+                    if word.head.head.dep_ == 'ROOT':
+                        subjpass = subj
             if word.dep_ in ('advmod','npadvmod'):
                 if word.head.dep_ == 'ROOT':
                     if verb == '':
                         adverb['bef'] = ''.join(w.text_with_ws for w in word.subtree).strip()
                     else:
                         adverb['aft'] = ''.join(w.text_with_ws for w in word.subtree).strip()
+            if word.dep_ == 'auxpass':
+                if word.head.dep_ == 'ROOT':
+                    if not subjpass:
+                        subjpass = subj
             if word.dep_ in ('aux','auxpass','neg'):
                 if word.head.dep_ == 'ROOT':
                     aux += [word]
@@ -63,8 +71,12 @@ def pass2act(doc):
                     prep = ''.join(w.text_with_ws for w in word.subtree).strip()
             if word.dep_.endswith('obj'):
                 if word.head.dep_ == 'agent':
-                    agent = ''.join(w.text_with_ws + ',' if w.dep_=='appos' else w.text_with_ws for w in word.subtree).strip()
-                    aplural = word.tag_ in ('NNS','NNPS')
+                    if word.head.head.dep_ == 'ROOT':
+                        agent = ''.join(w.text + ', ' if w.dep_=='appos' else w.text_with_ws for w in word.subtree).strip()
+                        aplural = word.tag_ in ('NNS','NNPS')
+            if word.dep_ in ('xcomp','ccomp','conj'):
+                if word.head.dep_ == 'ROOT':
+                    xcomp = ''.join(w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'punct':
                 punc = word.text
 
@@ -132,7 +144,7 @@ def pass2act(doc):
                 else:
                     advcl += w.text_with_ws
 
-        newsent = ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep])))+punc
+        newsent = ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep,xcomp])))+punc
         newsent = newsent[0].upper() + newsent[1:]
         newdoc += newsent + ' '
     return newdoc
