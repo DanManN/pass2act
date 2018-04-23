@@ -40,9 +40,9 @@ def pass2act(doc):
             if word.dep_ in ('advmod','npadvmod'):
                 if word.head.dep_ == 'ROOT':
                     if verb == '':
-                        adverb['bef'] = ''.join(w.text_with_ws for w in word.subtree).strip()
+                        adverb['bef'] = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
                     else:
-                        adverb['aft'] = ''.join(w.text_with_ws for w in word.subtree).strip()
+                        adverb['aft'] = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'auxpass':
                 if word.head.dep_ == 'ROOT':
                     if not subjpass:
@@ -65,18 +65,18 @@ def pass2act(doc):
                     verbtense = en.tenses(word.text)[0][0]
             if word.dep_ == 'prt':
                 if word.head.dep_ == 'ROOT':
-                    part = ''.join(w.text_with_ws for w in word.subtree).strip()
+                    part = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'prep':
                 if word.head.dep_ == 'ROOT':
-                    prep = ''.join(w.text_with_ws for w in word.subtree).strip()
+                    prep = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
             if word.dep_.endswith('obj'):
                 if word.head.dep_ == 'agent':
                     if word.head.head.dep_ == 'ROOT':
-                        agent = ''.join(w.text + ', ' if w.dep_=='appos' else w.text_with_ws for w in word.subtree).strip()
+                        agent = ''.join(w.text + ', ' if w.dep_=='appos' else (w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws) for w in word.subtree).strip()
                         aplural = word.tag_ in ('NNS','NNPS')
             if word.dep_ in ('xcomp','ccomp','conj'):
                 if word.head.dep_ == 'ROOT':
-                    xcomp = ''.join(w.text_with_ws for w in word.subtree).strip()
+                    xcomp = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
             if word.dep_ == 'punct':
                 punc = word.text
 
