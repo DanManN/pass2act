@@ -118,23 +118,26 @@ def pass2act(doc):
                     verbtense = en.tenses(a.text)[0][0]
                     auxstr += en.conjugate('be',tense=en.tenses(a.text)[0][0],number=num) + ' '
                     verbaspect = en.PROGRESSIVE
+                elif p.tag_ == 'MD':
+                    verbtense = en.INFINITIVE
             elif a.lemma_ == 'have':
                 num == en.PLURAL if p.tag_ == 'MD' else num
                 auxstr += en.conjugate('have',tense=en.tenses(a.text)[0][0],number=num) + ' '
                 if n.lemma_ == 'be':
                     verbaspect = en.PROGRESSIVE
+                    verbtense = en.tenses(n.text)[0][0]
             else:
                 auxstr += a.text_with_ws
         auxstr = auxstr.strip()
 
         verbaspect = None
-        if auxstr.startswith('will'):
-            verb = en.conjugate(verb,tense=en.INFINITIVE)
+        # if auxstr.startswith('will'):
+        #     verb = en.conjugate(verb,tense=en.INFINITIVE)
+        # else:
+        if verbaspect:
+            verb = en.conjugate(verb,tense=verbtense,aspect=verbaspect)
         else:
-            if verbaspect:
-                verb = en.conjugate(verb,tense=verbtense,aspect=verbaspect)
-            else:
-                verb = en.conjugate(verb,tense=verbtense)
+            verb = en.conjugate(verb,tense=verbtense)
 
         advcl = ''
         if advcltree:
