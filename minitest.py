@@ -137,16 +137,3 @@ plot_confusion_matrix(cnf_matrix, classes=["Active","Passive"], N=True,
                       title='Normalized confusion matrix')
 
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
