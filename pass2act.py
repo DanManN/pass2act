@@ -4,7 +4,7 @@ from wordinv import nouninv
 
 nlp = spacy.load('en')
 
-def pass2act(doc):
+def pass2act(doc, rec=False):
     parse = nlp(doc)
     newdoc = ''
     for sent in parse.sents:
@@ -37,7 +37,7 @@ def pass2act(doc):
                 if word.head.dep_ == 'auxpass':
                     if word.head.head.dep_ == 'ROOT':
                         subjpass = subj
-            if word.dep_ in ('advmod','npadvmod'):
+            if word.dep_ in ('advmod','npadvmod','oprd'):
                 if word.head.dep_ == 'ROOT':
                     if verb == '':
                         adverb['bef'] = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
@@ -77,8 +77,13 @@ def pass2act(doc):
             if word.dep_ in ('xcomp','ccomp','conj'):
                 if word.head.dep_ == 'ROOT':
                     xcomp = ''.join(w.text_with_ws.lower() if w.tag_ not in ('NNP','NNPS') else w.text_with_ws for w in word.subtree).strip()
-            if word.dep_ == 'punct':
-                punc = word.text
+                    that = xcomp.startswith('that')
+                    xcomp = pass2act(xcomp, True).strip(' .')
+                    if not xcomp.startswith('that') and that:
+                        xcomp = 'that '+xcomp
+            if word.dep_ == 'punct' and not rec:
+                if word.text != '"':
+                    punc = word.text
 
         # exit if not passive:
         if subjpass == '':
@@ -128,7 +133,7 @@ def pass2act(doc):
                     verbtense = en.tenses(n.text)[0][0]
             else:
                 auxstr += a.text_with_ws
-        auxstr = auxstr.strip()
+        auxstr = auxstr.lower().strip()
 
         verbaspect = None
         # if auxstr.startswith('will'):
@@ -148,6 +153,7 @@ def pass2act(doc):
                     advcl += w.text_with_ws
 
         newsent = ' '.join(list(filter(None, [agent,auxstr,adverb['bef'],verb,part,subjpass,adverb['aft'],advcl,prep,xcomp])))+punc
-        newsent = newsent[0].upper() + newsent[1:]
+        if not rec:
+            newsent = newsent[0].upper() + newsent[1:]
         newdoc += newsent + ' '
     return newdoc
