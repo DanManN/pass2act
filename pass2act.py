@@ -104,6 +104,7 @@ def pass2act(doc, rec=False):
         auxstr = ''
         num = en.SINGULAR if not aplural or agent in ('he','she') else en.PLURAL
         aux.append(aux[0])
+        verbaspect = None
         for (pp, p, a, n) in zip(aux,aux[1:],aux[2:],aux[3:]):
             if a.lemma_ == '.':
                 continue
@@ -135,10 +136,6 @@ def pass2act(doc, rec=False):
                 auxstr += a.text_with_ws
         auxstr = auxstr.lower().strip()
 
-        verbaspect = None
-        # if auxstr.startswith('will'):
-        #     verb = en.conjugate(verb,tense=en.INFINITIVE)
-        # else:
         if verbaspect:
             verb = en.conjugate(verb,tense=verbtense,aspect=verbaspect)
         else:
