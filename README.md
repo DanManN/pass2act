@@ -1,14 +1,14 @@
-# PASS2ACT 
- 
+# PASS2ACT
+
 #### Author : Daniel Nohimovich & Zhekai Jin (Scott)
 #### Course : ECE 467 Natural Language Processing
-#### Instructor : Professor Carl Sable 
+#### Instructor : Professor Carl Sable
 
 ## Description
-A passive to active voice transformer based on an existing dependency parser. The data pipleline processes the parser result to detect whether a sentence is passive. Then, transformations are performed on the parse tree to change the sentence to active voice if there is an agent in the original sentence. The result is rendered both in parser-tree-form visualization and text format.  
-	
-## Dependency 
-* [Python3](https://www.python.org/download/releases/3.0/) 
+A passive to active voice transformer based on an existing dependency parser. The data pipleline processes the parser result to detect whether a sentence is passive. Then, transformations are performed on the parse tree to change the sentence to active voice if there is an agent in the original sentence. The result is rendered both in parser-tree-form visualization and text format.
+
+## Dependency
+* [Python3](https://www.python.org/download/releases/3.0/)
 * [Spacy](https://spacy.io/)
 * [pattern](https://www.clips.uantwerpen.be/pages/pattern-en)
 
@@ -17,16 +17,16 @@ A passive to active voice transformer based on an existing dependency parser. Th
 ```
 pip3 install -U spacy
 python3 -m spacy download en
-python3 demo.py 
+python3 demo.py
 
-```	
+```
 Then follow the instruction as prompted.
 
-## Assumptions 
+## Assumptions
 * The whole data pipeline relies on th result of the parser tree result, which is assumed to be correct.
 * Input is generally a statement but not in question form.
 
-## Workflow 
+## Workflow
 
 **Given:**
 
@@ -45,12 +45,12 @@ Then follow the instruction as prompted.
 + finally the sentence is built up by joining the individual phrases in an active order with an attempt to accomdate miscellaneous clauses
 + if a sentence has an independent clause within it that is also passive the algorithm will recursively transform that clause as well
 
-## Running Time 
+## Running Time
 + Besides the initial parsing the algorithm to actually transform the sentence to active runs in approximately linear time.
 
 
 
-## Robustness: 
+## Robustness:
 The algorithm take edge cases into consideration and resolve recursive passive voice, but the wrong & ambiguous parser result will lead to err performance.
 
 
@@ -64,13 +64,13 @@ The algorithm take edge cases into consideration and resolve recursive passive v
 
 ## Future Improvement
 
-+ Question form : 
++ Question form :
 	+ The question form sentence could be resolved in a better form.
 
-+ Parser tree result correction: 
-	+ if the sentence has clear feature that could be detected to check with the parser tree to prve its validness, we could add error detection and correction on the parser result to improve the Robustness.	
-+ Feature selection: 
++ Parser tree result correction:
+	+ if the sentence has clear feature that could be detected to check with the parser tree to prve its validness, we could add error detection and correction on the parser result to improve the Robustness.
++ Feature selection:
 	+ More features or edge cases could be tested and considered.
 
-+ Muti Language support: 
++ Muti Language support:
 	+ More languages could be included with different head parameters.
