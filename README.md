@@ -58,7 +58,7 @@ The algorithm take edge cases into consideration and resolve recursive passive v
 ## Performance Testing
 * The testing was performed with a limited database and only the detection was tested since the transformed sentence has mutiple valid forms. The detection testing give 97% recall and 97% precision, and the err case was actually due to the err parser result. Without an existing baseline method to compare with, the algorithm was concluded to give a eligible passive voice detection.
 
-![confusion_matrix_normalized](https://github.com/ZhekaiJin/pass2act/blob/master/assets/confusion_matrix_normalized.png)
+![confusion_matrix_normalized](assets/confusion_matrix_normalized.png)
 
 
 
